@@ -114,20 +114,18 @@ var map = L.map('map').setView([-0.02,109.34],12)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-maxZoom:19
-}
+{maxZoom:19}
 ).addTo(map)
 
 var markers = L.markerClusterGroup({
+chunkedLoading:true,
 
 iconCreateFunction: function(cluster){
 
 return L.divIcon({
-html: "<div></div>",
-className: "marker-cluster",
-iconSize: L.point(40,40)
-
+html:"<div></div>",
+className:"marker-cluster",
+iconSize:L.point(40,40)
 })
 
 }
@@ -135,27 +133,15 @@ iconSize: L.point(40,40)
 })
 
 var pinIcon = L.icon({
-iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-iconSize: [25,41],
-iconAnchor: [12,41]
-})  
+iconUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+iconSize:[25,41],
+iconAnchor:[12,41]
+})
 
 var heatLayer
 var heatData=[]
-
 var usahaData=[]
-
-function getColor(skala){
-
-if(skala=="Mikro") return "green"
-if(skala=="Kecil") return "blue"
-if(skala=="Menengah") return "orange"
-if(skala=="Besar") return "red"
-
-return "gray"
-
-}
 
 function loadData(data){
 
@@ -166,14 +152,7 @@ data.forEach(function(u){
 
 if(!u.lat || !u.lon) return
 
-var marker = L.marker(
-[u.lat,u.lon],
-{icon: pinIcon}
-)
-
-var markers = L.markerClusterGroup({
-chunkedLoading:true
-})  
+var marker = L.marker([u.lat,u.lon],{icon:pinIcon})
 
 var popup = `
 <b>${u.nama}</b><br>
@@ -194,9 +173,7 @@ heatData.push([u.lat,u.lon,0.5])
 
 map.addLayer(markers)
 
-heatLayer = L.heatLayer(heatData,{
-radius:25
-})
+heatLayer = L.heatLayer(heatData,{radius:25})
 
 }
 
@@ -212,14 +189,14 @@ kecSet.add(d.kecamatan)
 
 })
 
-var select = document.getElementById("filterKec")
+var select=document.getElementById("filterKec")
 
 kecSet.forEach(function(k){
 
-var opt = document.createElement("option")
+var opt=document.createElement("option")
 
-opt.value = k
-opt.text = k
+opt.value=k
+opt.text=k
 
 select.appendChild(opt)
 
@@ -229,20 +206,18 @@ select.appendChild(opt)
 
 function filterData(){
 
-var kec = document.getElementById("filterKec").value
+var kec=document.getElementById("filterKec").value
+var search=document.getElementById("searchBox").value.toLowerCase()
 
-var search = document.getElementById("searchBox")
-.value.toLowerCase()
+var filtered=usahaData.filter(function(u){
 
-var filtered = usahaData.filter(function(u){
+var cocok=true
 
-var cocok = true
-
-if(kec && u.kecamatan != kec)
-cocok = false
+if(kec && u.kecamatan!=kec)
+cocok=false
 
 if(search && !u.nama.toLowerCase().includes(search))
-cocok = false
+cocok=false
 
 return cocok
 
@@ -269,28 +244,28 @@ map.addLayer(heatLayer)
 
 fetch("DATA_SBR_UPDATED.xlsx")
 
-.then(res => res.arrayBuffer())
+.then(res=>res.arrayBuffer())
 
-.then(data => {
+.then(data=>{
 
-var workbook = XLSX.read(data,{type:"array"})
+var workbook=XLSX.read(data,{type:"array"})
 
-var sheet = workbook.Sheets[workbook.SheetNames[0]]
+var sheet=workbook.Sheets[workbook.SheetNames[0]]
 
-var json = XLSX.utils.sheet_to_json(sheet)
+var json=XLSX.utils.sheet_to_json(sheet)
 
-usahaData = json.map(function(r){
+usahaData=json.map(function(r){
 
-return {
+return{
 
-nama: r.nama_usaha,
-alamat: r.alamat_usaha,
-kegiatan: r.kegiatan_usaha,
-skala: r.skala_usaha,
-kecamatan: r.nmkec,
-desa: r.nmdesa,
-lat: parseFloat(r.latitude),
-lon: parseFloat(r.longitude)
+nama:r.nama_usaha,
+alamat:r.alamat_usaha,
+kegiatan:r.kegiatan_usaha,
+skala:r.skala_usaha,
+kecamatan:r.nmkec,
+desa:r.nmdesa,
+lat:parseFloat(r.latitude),
+lon:parseFloat(r.longitude)
 
 }
 
@@ -306,4 +281,5 @@ loadData(usahaData)
 
 </body>
 </html>
+
 
