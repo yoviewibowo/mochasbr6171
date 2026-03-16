@@ -200,7 +200,7 @@ heatData=[]
 
 data.forEach(function(u){
 
-if(!u.lat || !u.lon) return
+if(isNaN(u.lat) || isNaN(u.lon)) return
 
 var marker=createMarker(u)
 
