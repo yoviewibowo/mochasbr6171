@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Peta Sebaran Usaha Pontianak</title>
+<title>MAPPING ECONOMIC NETWORK UNIT - SBR 6171</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -30,7 +30,9 @@ background:white;
 padding:15px;
 border-radius:8px;
 box-shadow:0 0 10px rgba(0,0,0,0.3);
-width:260px;
+width:280px;
+max-height:90vh;
+overflow:auto;
 }
 
 input,select{
@@ -45,60 +47,23 @@ width:100%;
 padding:6px;
 }
 
-.marker-cluster-small {
-background: rgba(0,150,255,0.4);
+.stat{
+font-size:13px;
+margin-top:10px;
 }
 
-.marker-cluster-small div {
-background: rgba(0,150,255,0.6);
-width: 30px;
-height: 30px;
-border-radius: 50%;
-}
-
-.marker-cluster-medium {
-background: rgba(255,165,0,0.4);
-}
-
-.marker-cluster-medium div {
-background: rgba(255,165,0,0.6);
-width: 40px;
-height: 40px;
-border-radius: 50%;
-}
-
-.marker-cluster-large {
-background: rgba(255,0,0,0.4);
-}
-
-.marker-cluster-large div {
-background: rgba(255,0,0,0.6);
-width: 50px;
-height: 50px;
-border-radius: 50%;  
-}
-
-.marker-cluster-custom {
-background: rgba(0,120,255,0.6);
-border-radius: 50%;
+.marker-cluster-custom{
+background:rgba(0,120,255,0.6);
+border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
 color:white;
 font-weight:bold;
-font-size:14px;
 width:40px;
 height:40px;
 }
 
-.marker-cluster-custom div{
-display:flex;
-align-items:center;
-justify-content:center;
-width:100%;
-height:100%;
-}  
-  
 </style>
 </head>
 
@@ -106,7 +71,7 @@ height:100%;
 
 <div class="panel">
 
-<b>Peta Sebaran Usaha</b><br>
+<b>MENU SBR</b><br>
 Kota Pontianak
 
 <input type="text" id="searchBox" placeholder="Cari nama usaha">
@@ -116,6 +81,11 @@ Kota Pontianak
 </select>
 
 <button onclick="toggleHeatmap()">Toggle Heatmap</button>
+
+<div class="stat">
+<b>Statistik Kecamatan</b>
+<div id="statistik"></div>
+</div>
 
 </div>
 
@@ -127,7 +97,7 @@ Kota Pontianak
 
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
 
@@ -139,38 +109,70 @@ L.tileLayer(
 ).addTo(map)
 
 var markers = L.markerClusterGroup({
+
 chunkedLoading:true,
 
-chunkProgress: function(processed, total, elapsed){
-if (elapsed > 1000) {
-console.log(processed + " / " + total)
-}
-},
-
-iconCreateFunction: function(cluster){
+iconCreateFunction:function(cluster){
 
 var count = cluster.getChildCount()
 
 return L.divIcon({
-html: "<div><span>"+count+"</span></div>",
-className: "marker-cluster-custom",
-iconSize: L.point(40,40)
+html:"<div>"+count+"</div>",
+className:"marker-cluster-custom",
+iconSize:L.point(40,40)
 })
 
 }
 
 })
-  
-var pinIcon = L.icon({
-iconUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-iconSize:[25,41],
-iconAnchor:[12,41]
-})
+
+map.addLayer(markers)
 
 var heatLayer
 var heatData=[]
 var usahaData=[]
+
+var sheetURL="https://docs.google.com/spreadsheets/d/e/19y-xm4PEtlDlDjCRlsC3Jd9u5LIT22Dga5Nynf-rb78/pub?output=csv"
+
+
+function getColor(skala){
+
+if(!skala) return "blue"
+
+skala=skala.toLowerCase()
+
+if(skala.includes("mikro")) return "green"
+if(skala.includes("kecil")) return "orange"
+if(skala.includes("menengah")) return "red"
+if(skala.includes("besar")) return "purple"
+
+return "blue"
+
+}
+
+function createMarker(u){
+
+var icon=L.divIcon({
+html:"📍",
+className:""
+})
+
+var marker=L.marker([u.lat,u.lon])
+
+var popup=`
+<b>${u.nama}</b><br>
+Jenis: ${u.kegiatan}<br>
+Skala: ${u.skala}<br>
+Alamat: ${u.alamat}<br>
+Kelurahan: ${u.desa}<br>
+Kecamatan: ${u.kecamatan}
+`
+
+marker.bindPopup(popup)
+
+return marker
+
+}
 
 function loadData(data){
 
@@ -181,18 +183,7 @@ data.forEach(function(u){
 
 if(!u.lat || !u.lon) return
 
-var marker = L.marker([u.lat,u.lon],{icon:pinIcon})
-
-var popup = `
-<b>${u.nama}</b><br>
-Jenis Usaha: ${u.kegiatan}<br>
-Skala: ${u.skala}<br>
-Alamat: ${u.alamat}<br>
-Kelurahan: ${u.desa}<br>
-Kecamatan: ${u.kecamatan}
-`
-
-marker.bindPopup(popup)
+var marker=createMarker(u)
 
 markers.addLayer(marker)
 
@@ -200,30 +191,55 @@ heatData.push([u.lat,u.lon,0.5])
 
 })
 
-map.addLayer(markers)
+heatLayer=L.heatLayer(heatData,{radius:25})
 
-heatLayer = L.heatLayer(heatData,{radius:25})
+updateStat(data)
+
+}
+
+function updateStat(data){
+
+var kecCount={}
+
+data.forEach(function(u){
+
+if(!kecCount[u.kecamatan])
+kecCount[u.kecamatan]=0
+
+kecCount[u.kecamatan]++
+
+})
+
+var html=""
+
+for(var k in kecCount){
+
+html+=k+" : "+kecCount[k]+" usaha<br>"
+
+}
+
+document.getElementById("statistik").innerHTML=html
 
 }
 
 function populateKecamatan(data){
 
-var kecSet = new Set()
+var kecSet=new Set()
 
 data.forEach(function(d){
 
-if(d.kecamatan){
+if(d.kecamatan)
 kecSet.add(d.kecamatan)
-}
 
 })
 
 var select=document.getElementById("filterKec")
 
+select.innerHTML='<option value="">Semua Kecamatan</option>'
+
 kecSet.forEach(function(k){
 
 var opt=document.createElement("option")
-
 opt.value=k
 opt.text=k
 
@@ -271,19 +287,19 @@ map.addLayer(heatLayer)
 
 }
 
-fetch("DATA_SBR_UPDATED.xlsx")
+function loadSheet(){
 
-.then(res=>res.arrayBuffer())
+Papa.parse(sheetURL,{
 
-.then(data=>{
+download:true,
+header:true,
+dynamicTyping:true,
 
-var workbook=XLSX.read(data,{type:"array"})
+complete:function(results){
 
-var sheet=workbook.Sheets[workbook.SheetNames[0]]
+var data=results.data
 
-var json=XLSX.utils.sheet_to_json(sheet)
-
-usahaData=json.map(function(r){
+usahaData=data.map(function(r){
 
 return{
 
@@ -301,16 +317,19 @@ lon:parseFloat(r.longitude)
 })
 
 populateKecamatan(usahaData)
-
 loadData(usahaData)
 
+}
+
 })
+
+}
+
+loadSheet()
+
+setInterval(loadSheet,30000)
 
 </script>
 
 </body>
 </html>
-
-
-
-
