@@ -106,7 +106,7 @@ margin-bottom:10px;
 
 <div id="loading">
 <div class="spinner"></div>
-<div>Memuat Peta Usaha SBR Kota Pontianak...</div>
+<div>Memuat Peta Usaha Hasil SBR Kota Pontianak...</div>
 </div>
 
 <div class="panel">
@@ -114,7 +114,7 @@ margin-bottom:10px;
 <b>MENU SBR</b><br>
 Kota Pontianak
 
-<input type="text" id="searchBox" placeholder="Cari nama usaha">
+<input type="text" id="searchBox" placeholder="Cari nama usaha / username profiler">
 
 <select id="filterKec">
 <option value="">Semua Kecamatan</option>
@@ -287,7 +287,10 @@ var cocok=true
 if(kec && u.kecamatan!=kec)
 cocok=false
 
-if(search && !u.nama.toLowerCase().includes(search))
+var nama=(u.nama||"").toLowerCase()
+var profiler=(u.profiler||"").toLowerCase()
+
+if(search && !(nama.includes(search) || profiler.includes(search)))
 cocok=false
 
 return cocok
