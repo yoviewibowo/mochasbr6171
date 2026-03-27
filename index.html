@@ -12,35 +12,83 @@ href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 
 <style>
 
-body{margin:0;font-family:Arial;}
-#map{height:100vh;}
+body{
+margin:0;
+font-family:Arial;
+}
+
+#map{
+height:100vh;
+}
+
+/* PANEL MENU */
 
 .panel{
 position:absolute;
-top:10px;left:10px;z-index:1000;
-background:white;padding:15px;
+top:10px;
+left:10px;
+z-index:1000;
+background:white;
+padding:15px;
 border-radius:8px;
 box-shadow:0 0 10px rgba(0,0,0,0.3);
-width:280px;max-height:90vh;overflow:auto;
+width:280px;
+max-height:90vh;
+overflow:auto;
 }
 
 input,select{
-width:100%;margin-top:5px;margin-bottom:10px;padding:5px;
+width:100%;
+margin-top:5px;
+margin-bottom:10px;
+padding:5px;
 }
 
-button{width:100%;padding:6px;}
+button{
+width:100%;
+padding:6px;
+}
 
-.stat{font-size:13px;margin-top:10px;}
+.stat{
+font-size:13px;
+margin-top:10px;
+}
+
+/* CLUSTER STYLE */
+
+.marker-cluster-custom{
+background:rgba(0,120,255,0.6);
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-weight:bold;
+width:40px;
+height:40px;
+}
+
+/* LOADING SCREEN */
 
 #loading{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:white;z-index:2000;
-display:flex;align-items:center;justify-content:center;flex-direction:column;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:white;
+z-index:2000;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
 }
 
 .spinner{
-width:40px;height:40px;
-border:4px solid #ddd;border-top:4px solid #0078ff;
+width:40px;
+height:40px;
+border:4px solid #ddd;
+border-top:4px solid #0078ff;
 border-radius:50%;
 animation:spin 1s linear infinite;
 margin-bottom:10px;
@@ -58,7 +106,7 @@ margin-bottom:10px;
 
 <div id="loading">
 <div class="spinner"></div>
-<div>Memuat Peta Usaha Hasil SBR Kota Pontianak...</div>
+<div>Memuat Peta Usaha Kota Pontianak...</div>
 </div>
 
 <div class="panel">
@@ -66,7 +114,7 @@ margin-bottom:10px;
 <b>MENU SBR</b><br>
 Kota Pontianak
 
-<input type="text" id="searchBox" placeholder="Cari nama usaha / profiler">
+<input type="text" id="searchBox" placeholder="Cari nama usaha">
 
 <select id="filterKec">
 <option value="">Semua Kecamatan</option>
@@ -84,8 +132,11 @@ Kota Pontianak
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
@@ -97,9 +148,22 @@ L.tileLayer(
 {maxZoom:19}
 ).addTo(map)
 
-// CLUSTER RINGAN (DEFAULT)
 var markers = L.markerClusterGroup({
-chunkedLoading:true
+
+chunkedLoading:true,
+
+iconCreateFunction:function(cluster){
+
+var count = cluster.getChildCount()
+
+return L.divIcon({
+html:"<div>"+count+"</div>",
+className:"marker-cluster-custom",
+iconSize:L.point(40,40)
+})
+
+}
+
 })
 
 map.addLayer(markers)
@@ -110,28 +174,25 @@ var usahaData=[]
 
 var sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTtxjPWA_jckzAWIbQUs0s2dKWE76oenRiukwAlRpNIAn0YaBLCN68-Kt1oHEVLeEu8HKw8hDy0dapw/pub?output=csv"
 
-// MARKER
 function createMarker(u){
 
 var marker=L.marker([u.lat,u.lon])
 
 var popup=`
-<b>${u.nama || '-'}</b><br>
-ID SBR: <b>${u.idsbr || '-'}</b><br>
-Profiler: <b>${u.profiler || '-'}</b><br>
-Jenis: ${u.kegiatan || '-'}<br>
-Skala: ${u.skala || '-'}<br>
-Alamat: ${u.alamat || '-'}<br>
-Kelurahan: ${u.desa || '-'}<br>
-Kecamatan: ${u.kecamatan || '-'}
+<b>${u.nama}</b><br>
+Jenis: ${u.kegiatan}<br>
+Skala: ${u.skala}<br>
+Alamat: ${u.alamat}<br>
+Kelurahan: ${u.desa}<br>
+Kecamatan: ${u.kecamatan}
 `
 
 marker.bindPopup(popup)
+
 return marker
 
 }
 
-// LOAD DATA
 function loadData(data){
 
 markers.clearLayers()
@@ -139,9 +200,10 @@ heatData=[]
 
 data.forEach(function(u){
 
-if(!u.lat || !u.lon || isNaN(u.lat) || isNaN(u.lon)) return
+if(isNaN(u.lat) || isNaN(u.lon)) return
 
 var marker=createMarker(u)
+
 markers.addLayer(marker)
 
 heatData.push([u.lat,u.lon,0.5])
@@ -158,7 +220,6 @@ map.fitBounds(markers.getBounds())
 
 }
 
-// STATISTIK
 function updateStat(data){
 
 var kecCount={}
@@ -176,35 +237,42 @@ kecCount[u.kecamatan]++
 var html="<b>Total Usaha : "+total+"</b><br><br>"
 
 for(var k in kecCount){
+
 html+=k+" : "+kecCount[k]+" usaha<br>"
+
 }
 
 document.getElementById("statistik").innerHTML=html
 
 }
 
-// DROPDOWN
 function populateKecamatan(data){
 
 var kecSet=new Set()
 
 data.forEach(function(d){
-if(d.kecamatan) kecSet.add(d.kecamatan)
+
+if(d.kecamatan)
+kecSet.add(d.kecamatan)
+
 })
 
 var select=document.getElementById("filterKec")
+
 select.innerHTML='<option value="">Semua Kecamatan</option>'
 
 kecSet.forEach(function(k){
+
 var opt=document.createElement("option")
 opt.value=k
 opt.text=k
+
 select.appendChild(opt)
+
 })
 
 }
 
-// FILTER
 function filterData(){
 
 var kec=document.getElementById("filterKec").value
@@ -214,12 +282,10 @@ var filtered=usahaData.filter(function(u){
 
 var cocok=true
 
-if(kec && u.kecamatan!=kec) cocok=false
+if(kec && u.kecamatan!=kec)
+cocok=false
 
-var nama=(u.nama||"").toLowerCase()
-var profiler=(u.profiler||"").toLowerCase()
-
-if(search && !(nama.includes(search) || profiler.includes(search)))
+if(search && !u.nama.toLowerCase().includes(search))
 cocok=false
 
 return cocok
@@ -230,25 +296,27 @@ loadData(filtered)
 
 }
 
-document.getElementById("filterKec").addEventListener("change",filterData)
-document.getElementById("searchBox").addEventListener("keyup",filterData)
+document.getElementById("filterKec")
+.addEventListener("change",filterData)
 
-// HEATMAP
+document.getElementById("searchBox")
+.addEventListener("keyup",filterData)
+
 function toggleHeatmap(){
 
 if(!heatLayer) return
 
-if(map.hasLayer(heatLayer)) map.removeLayer(heatLayer)
-else map.addLayer(heatLayer)
+if(map.hasLayer(heatLayer))
+map.removeLayer(heatLayer)
+else
+map.addLayer(heatLayer)
 
 }
 
-// LOADING
 function hideLoading(){
 document.getElementById("loading").style.display="none"
 }
 
-// LOAD CSV
 function loadSheet(){
 
 Papa.parse(sheetURL,{
@@ -261,27 +329,22 @@ complete:function(results){
 
 var data=results.data
 console.log("Total baris CSV:", data.length)
+  
+usahaData=data.map(function(r){
 
-usahaData = data.map(function(r){
+return{
 
-return {
-nama: r.nama_usaha || "",
-idsbr: r.idsbr || "",
-alamat: r.alamat_usaha || "",
-kegiatan: r.kegiatan_usaha || "",
-skala: r.skala_usaha || "",
-kecamatan: r.nmkec || "",
-desa: r.nmdesa || "",
-profiler: r.gc_username || "",
-lat: parseFloat(r.latitude) || 0,
-lon: parseFloat(r.longitude) || 0
+nama:r.nama_usaha,
+alamat:r.alamat_usaha,
+kegiatan:r.kegiatan_usaha,
+skala:r.skala_usaha,
+kecamatan:r.nmkec,
+desa:r.nmdesa,
+lat:parseFloat(r.latitude),
+lon:parseFloat(r.longitude)
+
 }
 
-})
-
-// filter data valid
-usahaData = usahaData.filter(function(u){
-return !isNaN(u.lat) && !isNaN(u.lon) && u.lat != 0 && u.lon != 0
 })
 
 populateKecamatan(usahaData)
