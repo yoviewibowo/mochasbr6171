@@ -179,12 +179,14 @@ function createMarker(u){
 var marker=L.marker([u.lat,u.lon])
 
 var popup=`
-<b>${u.nama}</b><br>
-Jenis: ${u.kegiatan}<br>
-Skala: ${u.skala}<br>
-Alamat: ${u.alamat}<br>
-Kelurahan: ${u.desa}<br>
-Kecamatan: ${u.kecamatan}
+<b>${u.nama || '-'}</b><br>
+ID SBR: <b>${u.idsbr || '-'}</b><br>
+Profiler: <b>${u.profiler || '-'}</b><br>
+Jenis: ${u.kegiatan || '-'}<br>
+Skala: ${u.skala || '-'}<br>
+Alamat: ${u.alamat || '-'}<br>
+Kelurahan: ${u.desa || '-'}<br>
+Kecamatan: ${u.kecamatan || '-'}
 `
 
 marker.bindPopup(popup)
@@ -330,21 +332,19 @@ complete:function(results){
 var data=results.data
 console.log("Total baris CSV:", data.length)
   
-usahaData=data.map(function(r){
-
+uusahaData=data.map(function(r){
 return{
-
-nama:r.nama_usaha,
-alamat:r.alamat_usaha,
-kegiatan:r.kegiatan_usaha,
-skala:r.skala_usaha,
-kecamatan:r.nmkec,
-desa:r.nmdesa,
-lat:parseFloat(r.latitude),
-lon:parseFloat(r.longitude)
-
+nama:r.nama_usaha || "",
+idsbr:r.idsbr || "",
+alamat:r.alamat_usaha || "",
+kegiatan:r.kegiatan_usaha || "",
+skala:r.skala_usaha || "",
+kecamatan:r.nmkec || "",
+desa:r.nmdesa || "",
+profiler:r.gc_username || "",
+lat:parseFloat(r.latitude) || 0,
+lon:parseFloat(r.longitude) || 0
 }
-
 })
 
 populateKecamatan(usahaData)
