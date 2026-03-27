@@ -97,39 +97,9 @@ L.tileLayer(
 {maxZoom:19}
 ).addTo(map)
 
-// 🎨 warna kecamatan
-var kecColors = {}
-function getColor(kec){
-if(!kecColors[kec]){
-kecColors[kec] = "#"+Math.floor(Math.random()*16777215).toString(16)
-}
-return kecColors[kec]
-}
-
-// CLUSTER
+// CLUSTER RINGAN (DEFAULT)
 var markers = L.markerClusterGroup({
-chunkedLoading:true,
-
-iconCreateFunction:function(cluster){
-
-var children = cluster.getAllChildMarkers()
-var kec = "default"
-
-if(children.length > 0 && children[0].options.kecamatan){
-kec = children[0].options.kecamatan
-}
-
-var color = getColor(kec)
-var count = cluster.getChildCount()
-
-return L.divIcon({
-html:"<div style='background:"+color+"; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;'>"+count+"</div>",
-className:"",
-iconSize:L.point(40,40)
-})
-
-}
-
+chunkedLoading:true
 })
 
 map.addLayer(markers)
@@ -143,9 +113,7 @@ var sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTtxjPWA_jckzAWIbQ
 // MARKER
 function createMarker(u){
 
-var marker=L.marker([u.lat,u.lon],{
-kecamatan:u.kecamatan
-})
+var marker=L.marker([u.lat,u.lon])
 
 var popup=`
 <b>${u.nama || '-'}</b><br>
@@ -163,7 +131,7 @@ return marker
 
 }
 
-// LOAD DATA KE MAP
+// LOAD DATA
 function loadData(data){
 
 markers.clearLayers()
@@ -236,7 +204,7 @@ select.appendChild(opt)
 
 }
 
-// FILTER + SEARCH
+// FILTER
 function filterData(){
 
 var kec=document.getElementById("filterKec").value
@@ -311,7 +279,7 @@ lon: parseFloat(r.longitude) || 0
 
 })
 
-// buang data kosong
+// filter data valid
 usahaData = usahaData.filter(function(u){
 return !isNaN(u.lat) && !isNaN(u.lon) && u.lat != 0 && u.lon != 0
 })
