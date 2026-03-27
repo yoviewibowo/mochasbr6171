@@ -54,10 +54,8 @@ font-size:13px;
 margin-top:10px;
 }
 
-/* CLUSTER STYLE */
-
-.marker-cluster-custom{
-background:rgba(0,120,255,0.6);
+/* CLUSTER BASE */
+.marker-cluster{
 border-radius:50%;
 display:flex;
 align-items:center;
@@ -106,7 +104,7 @@ margin-bottom:10px;
 
 <div id="loading">
 <div class="spinner"></div>
-<div>Memuat Peta Usaha Kota Pontianak...</div>
+<div>Memuat Peta Usaha Hasil SBR Kota Pontianak...</div>
 </div>
 
 <div class="panel">
@@ -114,7 +112,7 @@ margin-bottom:10px;
 <b>MENU SBR</b><br>
 Kota Pontianak
 
-<input type="text" id="searchBox" placeholder="Cari nama usaha">
+<input type="text" id="searchBox" placeholder="Cari nama usaha / profiler">
 
 <select id="filterKec">
 <option value="">Semua Kecamatan</option>
@@ -148,18 +146,33 @@ L.tileLayer(
 {maxZoom:19}
 ).addTo(map)
 
+// 🎨 WARNA PER KECAMATAN
+var kecColors = {}
+
+function getColor(kec){
+if(!kecColors[kec]){
+kecColors[kec] = "#"+Math.floor(Math.random()*16777215).toString(16)
+}
+return kecColors[kec]
+}
+
 var markers = L.markerClusterGroup({
 
 chunkedLoading:true,
 
 iconCreateFunction:function(cluster){
 
+var children = cluster.getAllChildMarkers()
+var kec = children[0]?.options.kecamatan || "default"
+var color = getColor(kec)
+
 var count = cluster.getChildCount()
 
 return L.divIcon({
 html:"<div>"+count+"</div>",
-className:"marker-cluster-custom",
-iconSize:L.point(40,40)
+className:"marker-cluster",
+iconSize:L.point(40,40),
+bgPos:null
 })
 
 }
@@ -176,17 +189,19 @@ var sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTtxjPWA_jckzAWIbQ
 
 function createMarker(u){
 
-var marker=L.marker([u.lat,u.lon])
+var marker=L.marker([u.lat,u.lon],{
+kecamatan:u.kecamatan
+})
 
 var popup=`
-<b>${u.nama}</b><br>
-<b>${u.idsbr}</b><br>
-Profiler: ${u.profiler}<br>
-Jenis: ${u.kegiatan}<br>
-Skala: ${u.skala}<br>
-Alamat: ${u.alamat}<br>
-Kelurahan: ${u.desa}<br>
-Kecamatan: ${u.kecamatan}
+<b>${u.nama || '-'}</b><br>
+ID SBR: <b>${u.idsbr || '-'}</b><br>
+Profiler: <b>${u.profiler || '-'}</b><br>
+Jenis: ${u.kegiatan || '-'}<br>
+Skala: ${u.skala || '-'}<br>
+Alamat: ${u.alamat || '-'}<br>
+Kelurahan: ${u.desa || '-'}<br>
+Kecamatan: ${u.kecamatan || '-'}
 `
 
 marker.bindPopup(popup)
@@ -239,9 +254,7 @@ kecCount[u.kecamatan]++
 var html="<b>Total Usaha : "+total+"</b><br><br>"
 
 for(var k in kecCount){
-
 html+=k+" : "+kecCount[k]+" usaha<br>"
-
 }
 
 document.getElementById("statistik").innerHTML=html
@@ -253,10 +266,8 @@ function populateKecamatan(data){
 var kecSet=new Set()
 
 data.forEach(function(d){
-
 if(d.kecamatan)
 kecSet.add(d.kecamatan)
-
 })
 
 var select=document.getElementById("filterKec")
@@ -264,13 +275,10 @@ var select=document.getElementById("filterKec")
 select.innerHTML='<option value="">Semua Kecamatan</option>'
 
 kecSet.forEach(function(k){
-
 var opt=document.createElement("option")
 opt.value=k
 opt.text=k
-
 select.appendChild(opt)
-
 })
 
 }
@@ -287,7 +295,10 @@ var cocok=true
 if(kec && u.kecamatan!=kec)
 cocok=false
 
-if(search && !u.nama.toLowerCase().includes(search))
+var nama=(u.nama||"").toLowerCase()
+var profiler=(u.profiler||"").toLowerCase()
+
+if(search && !(nama.includes(search) || profiler.includes(search)))
 cocok=false
 
 return cocok
@@ -331,11 +342,10 @@ complete:function(results){
 
 var data=results.data
 console.log("Total baris CSV:", data.length)
-  
+
 usahaData=data.map(function(r){
 
 return{
-
 nama:r.nama_usaha,
 idsbr:r.idsbr,
 alamat:r.alamat_usaha,
@@ -343,10 +353,9 @@ kegiatan:r.kegiatan_usaha,
 skala:r.skala_usaha,
 kecamatan:r.nmkec,
 desa:r.nmdesa,
-profiler:r.gc_username,  
+profiler:r.gc_username,
 lat:parseFloat(r.latitude),
 lon:parseFloat(r.longitude)
-
 }
 
 })
