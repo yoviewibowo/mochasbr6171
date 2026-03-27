@@ -106,7 +106,7 @@ margin-bottom:10px;
 
 <div id="loading">
 <div class="spinner"></div>
-<div>Memuat Peta Usaha Kota Pontianak...</div>
+<div>Memuat Peta Usaha SBR Kota Pontianak...</div>
 </div>
 
 <div class="panel">
@@ -332,7 +332,7 @@ complete:function(results){
 var data=results.data
 console.log("Total baris CSV:", data.length)
   
-uusahaData=data.map(function(r){
+usahaData=data.map(function(r){
 return{
 nama:r.nama_usaha || "",
 idsbr:r.idsbr || "",
