@@ -15,58 +15,31 @@ href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 body{margin:0;font-family:Arial;}
 #map{height:100vh;}
 
-/* 🌸 PANEL MOCHA */
+/* PANEL */
 .panel{
-position:absolute;
-top:15px;
-left:15px;
-z-index:1000;
-
+position:absolute;top:15px;left:15px;z-index:1000;
 background:linear-gradient(135deg,#f5ebe0,#e6ccb2);
-color:#4e342e;
-
-padding:15px;
-border-radius:12px;
-
+color:#4e342e;padding:15px;border-radius:12px;
 box-shadow:0 8px 20px rgba(0,0,0,0.25);
-
-width:280px;
-max-height:90vh;
-overflow:auto;
-
+width:280px;max-height:90vh;overflow:auto;
 border:1px solid #d7bfae;
 }
 
 input,select{
-width:100%;
-margin:5px 0 10px;
-padding:6px;
-border-radius:6px;
-border:1px solid #c8a98d;
-background:#fff8f3;
-color:#4e342e;
+width:100%;margin:5px 0 10px;padding:6px;
+border-radius:6px;border:1px solid #c8a98d;
+background:#fff8f3;color:#4e342e;
 }
 
 button{
-width:100%;
-padding:7px;
-border:none;
-border-radius:8px;
-
-background:#6d4c41;
-color:white;
-
-cursor:pointer;
-transition:0.2s;
+width:100%;padding:7px;border:none;border-radius:8px;
+background:#6d4c41;color:white;cursor:pointer;transition:0.2s;
 }
-
-button:hover{
-background:#4e342e;
-}
+button:hover{background:#4e342e;}
 
 .stat{font-size:13px;margin-top:10px;}
 
-/* ☕ CLUSTER MOCHA */
+/* CLUSTER */
 .marker-cluster-custom{
 background:rgba(141,110,99,0.8);
 border-radius:50%;
@@ -74,58 +47,57 @@ display:flex;align-items:center;justify-content:center;
 color:white;font-weight:bold;width:40px;height:40px;
 }
 
-/* ☕ POPUP MOCHA */
+/* POPUP */
 .leaflet-popup-content-wrapper{
-background:#f5ebe0;
-color:#4e342e;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.2);
+background:#f5ebe0;color:#4e342e;
+border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,0.2);
 }
+.leaflet-popup-tip{background:#f5ebe0;}
+.leaflet-popup-content{font-size:13px;line-height:1.4;}
 
-.leaflet-popup-tip{
-background:#f5ebe0;
-}
-
-.leaflet-popup-content{
-font-size:13px;
-line-height:1.4;
-}
-
-/* ☕ ZOOM BUTTON */
+/* ZOOM */
 .leaflet-control-zoom a{
-background:#6d4c41;
-color:white;
-border:none;
+background:#6d4c41;color:white;border:none;
 }
+.leaflet-control-zoom a:hover{background:#4e342e;}
 
-.leaflet-control-zoom a:hover{
-background:#4e342e;
-}
-
-/* 🌸 LOADING */
+/* 🌸 LOADING STORY */
 #loading{
 position:fixed;top:0;left:0;width:100%;height:100%;
 background:linear-gradient(135deg,#EFD6BF,#C87A32);
 z-index:2000;display:flex;flex-direction:column;
 align-items:center;justify-content:center;
-color:#6d4c41;
+color:#6d4c41;overflow:hidden;
 }
 
-.coffee-img{
-width:120px;
-animation:float 2.5s ease-in-out infinite;
+/* stage */
+.stage{
+position:relative;
+width:140px;height:140px;
 }
 
-@keyframes float{
-0%,100%{transform:translateY(0)}
-50%{transform:translateY(-12px)}
+.stage img{
+position:absolute;width:100%;
+opacity:0;
+transform:scale(0.7) blur(6px);
+transition:all 0.8s ease;
 }
 
-#loading-text{
-margin-top:10px;
-font-size:16px;
-text-align:center;
+.stage img.active{
+opacity:1;
+transform:scale(1) blur(0);
 }
+
+/* zoom end */
+.zoom-final{
+animation:zoomFinal 1s forwards;
+}
+@keyframes zoomFinal{
+0%{transform:scale(1);opacity:1;}
+100%{transform:scale(10);opacity:0;}
+}
+
+#loading-text{margin-top:10px;font-size:16px;text-align:center;}
 
 .progress-container{
 width:260px;height:10px;
@@ -139,10 +111,7 @@ background:#5E3917;
 transition:width 0.3s;
 }
 
-#progress-text{
-margin-top:8px;
-font-size:14px;
-}
+#progress-text{margin-top:8px;font-size:14px;}
 
 </style>
 </head>
@@ -151,12 +120,15 @@ font-size:14px;
 
 <!-- LOADING -->
 <div id="loading">
-  <img class="coffee-img"
-  src="https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/iconmochasbr6171.png">
-  
-  <div id="loading-text">
-    MOCHA sedang menyeduh data usaha...
+
+  <div class="stage">
+    <img src="https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/bijikopimochasbr6171.png" id="step1">
+    <img src="https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/susumochasbr6171.png" id="step2">
+    <img src="https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/seduhmochasbr6171.png" id="step3">
+    <img src="https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/iconmochasbr6171.png" id="step4">
   </div>
+
+  <div id="loading-text">MOCHA SBR...</div>
 
   <div class="progress-container">
     <div id="progress-bar"></div>
@@ -192,19 +164,16 @@ placeholder="Cari nama usaha / username profiler">
 
 <script>
 
-/* MAP + MOVE ZOOM */
+/* MAP */
 var map=L.map('map',{zoomControl:false}).setView([-0.02,109.34],12)
-
-L.control.zoom({
-position:'bottomright'
-}).addTo(map)
+L.control.zoom({position:'bottomright'}).addTo(map)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {maxZoom:19}
 ).addTo(map)
 
-/* ☕ MARKER ICON MOCHA */
+/* ICON */
 var mochaIcon=L.icon({
 iconUrl:'https://raw.githubusercontent.com/yoviewibowo/mochasbr6171/main/locationmocha.png',
 iconSize:[40,40],
@@ -232,19 +201,40 @@ var currentRenderId=0
 
 var sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTtxjPWA_jckzAWIbQUs0s2dKWE76oenRiukwAlRpNIAn0YaBLCN68-Kt1oHEVLeEu8HKw8hDy0dapw/pub?output=csv"
 
+/* LOADING STEP */
+function setStep(p){
+let text=""
+let step=1
+
+if(p<25){step=1;text="Menggiling biji kopi..."}
+else if(p<50){step=2;text="Menuangkan susu..."}
+else if(p<75){step=3;text="Menyeduh kopi..."}
+else{step=4;text="MOCHA siap disajikan ☕"}
+
+document.querySelectorAll(".stage img").forEach(img=>img.classList.remove("active"))
+document.getElementById("step"+step).classList.add("active")
+
+document.getElementById("loading-text").innerText=text
+}
+
 /* PROGRESS */
 function updateProgress(val){
 document.getElementById("progress-bar").style.width=val+"%"
 document.getElementById("progress-text").innerText=Math.floor(val)+"%"
+setStep(val)
 }
 
-function hideLoading(){
-updateProgress(100)
-setTimeout(()=>document.getElementById("loading").style.display="none",500)
+function finishLoading(){
+let cup=document.getElementById("step4")
+cup.classList.add("zoom-final")
+
+setTimeout(()=>{
+document.getElementById("loading").style.display="none"
+},900)
 }
 
+/* MARKER */
 function createMarker(u){
-
 var marker=L.marker([u.lat,u.lon],{icon:mochaIcon})
 
 var popup=`
@@ -257,12 +247,11 @@ Alamat: ${u.alamat||'-'}<br>
 Kelurahan: ${u.desa||'-'}<br>
 Kecamatan: ${u.kecamatan||'-'}
 `
-
 marker.bindPopup(popup)
 return marker
 }
 
-/* FIX DOUBLE RENDER */
+/* LOAD DATA */
 function loadData(data){
 
 markers.clearLayers()
@@ -285,8 +274,7 @@ while(i<data.length && count<batchSize){
 let u=data[i]
 
 if(!isNaN(u.lat)&&!isNaN(u.lon)){
-let marker=createMarker(u)
-markers.addLayer(marker)
+markers.addLayer(createMarker(u))
 heatData.push([u.lat,u.lon,0.5])
 }
 
@@ -295,7 +283,8 @@ count++
 
 }
 
-updateProgress((i/data.length)*100)
+let progress=(i/data.length)*100
+updateProgress(progress)
 
 if(i<data.length){
 requestAnimationFrame(addBatch)
@@ -308,7 +297,7 @@ if(markers.getLayers().length>0){
 map.fitBounds(markers.getBounds())
 }
 
-hideLoading()
+setTimeout(finishLoading,600)
 
 }
 
@@ -318,8 +307,8 @@ addBatch()
 
 }
 
+/* STAT */
 function updateStat(data){
-
 var kecCount={}
 var total=data.length
 
@@ -332,14 +321,12 @@ var html="<b>Total Usaha : "+total+"</b><br><br>"
 for(var k in kecCount){
 html+=k+" : "+kecCount[k]+" usaha<br>"
 }
-
 document.getElementById("statistik").innerHTML=html
 }
 
+/* FILTER */
 function populateKecamatan(data){
-
 var kecSet=new Set()
-
 data.forEach(d=>{if(d.kecamatan)kecSet.add(d.kecamatan)})
 
 var select=document.getElementById("filterKec")
@@ -351,18 +338,15 @@ opt.value=k
 opt.text=k
 select.appendChild(opt)
 })
-
 }
 
 function filterData(){
-
 var kec=document.getElementById("filterKec").value
 var search=document.getElementById("searchBox").value.toLowerCase()
 
 var filtered=usahaData.filter(function(u){
 
 var cocok=true
-
 if(kec && u.kecamatan!=kec) cocok=false
 
 var nama=(u.nama||"").toLowerCase()
@@ -376,19 +360,15 @@ return cocok
 })
 
 loadData(filtered)
-
 }
 
-/* DEBOUNCE */
 let typingTimer
-document.getElementById("searchBox")
-.addEventListener("keyup",function(){
+document.getElementById("searchBox").addEventListener("keyup",function(){
 clearTimeout(typingTimer)
 typingTimer=setTimeout(filterData,300)
 })
 
-document.getElementById("filterKec")
-.addEventListener("change",filterData)
+document.getElementById("filterKec").addEventListener("change",filterData)
 
 function toggleHeatmap(){
 if(!heatLayer) return
@@ -396,13 +376,12 @@ if(map.hasLayer(heatLayer)) map.removeLayer(heatLayer)
 else map.addLayer(heatLayer)
 }
 
+/* LOAD CSV */
 function loadSheet(){
-
 Papa.parse(sheetURL,{
 download:true,
 header:true,
 dynamicTyping:true,
-
 complete:function(results){
 
 var data=results.data
@@ -426,9 +405,7 @@ populateKecamatan(usahaData)
 loadData(usahaData)
 
 }
-
 })
-
 }
 
 loadSheet()
